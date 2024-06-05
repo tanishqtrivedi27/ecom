@@ -1,0 +1,10 @@
+version: '1.0'
+
+services:
+	postgres-0:
+		image: postgres
+		container_name:postgres-0
+		environment:
+			POSTGRES_PASSWORD: postgres
+		ports:
+			- "5432:5432"
