@@ -4,8 +4,8 @@ build:
 test:
 	@go test -v ./..
 
-run: build
-	@./bin/ecom
-
 migrate:
 	@go run cmd/migrate/main.go
+
+run: migrate build
+	@./bin/ecom

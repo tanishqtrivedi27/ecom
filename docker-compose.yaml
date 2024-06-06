@@ -1,10 +1,24 @@
-version: '3.0'
+version: '1.0'
 
 services:
-  postgres-0:
+  postgres:
     image: postgres
     container_name: postgres-0
     environment:
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
+
+  ecom:
+    build: .
+    container_name: ecom
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: ecom
+      JWT_SECRET: getng850egvmn50gvthgwujdvt
+      JWT_EXPIRATION: 3600
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres

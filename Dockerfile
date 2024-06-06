@@ -1,15 +1,16 @@
-#build stage
-FROM golang:alpine AS builder
-RUN apk add --no-cache git
-WORKDIR /go/src/app
+FROM golang:1.22-alpine AS build-stage
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
 COPY . .
-RUN go get -d -v ./...
-RUN go build -o /go/bin/app -v ./...
+RUN go build -o ecom ./cmd/main.go
+RUN go build -o db ./cmd/migrate/main.go
 
-#final stage
-FROM alpine:latest
-RUN apk --no-cache add ca-certificates
-COPY --from=builder /go/bin/app /app
-ENTRYPOINT /app
-LABEL Name=ecom Version=0.0.1
+FROM alpine AS release-stage
+WORKDIR /app
+COPY --from=build-stage /app/ecom ecom
+COPY --from=build-stage /app/db db
 EXPOSE 8080
+COPY entrypoint.sh entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+ENTRYPOINT [ "/app/entrypoint.sh" ]
