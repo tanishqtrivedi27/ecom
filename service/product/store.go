@@ -42,7 +42,6 @@ func (s *Store) GetProductByIDs(productIDs []int) ([]types.Product, error) {
     placeholderStr := strings.Join(placeholders, ", ")
 
     query := fmt.Sprintf("SELECT * FROM products WHERE id IN (%s)", placeholderStr)
-    fmt.Println("Query:", query)
 
 	// Convert productIDs to []interface{}
 	args := make([]interface{}, len(productIDs))
