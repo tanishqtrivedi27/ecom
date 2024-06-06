@@ -41,13 +41,13 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 
 	//check if the user already exits
 	u, err := h.store.GetUserByEmail(payload.Email)
-	if err == nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("not found, invalid email or password"))
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("not found, invalid email"))
 		return
 	}
 
 	if !auth.ComparePasswords(u.Password, []byte(payload.Password)) {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("not found, invalid email or password"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("not found, invalid password"))
 		return
 	}
 	secret := []byte(config.Envs.JWTSecret)

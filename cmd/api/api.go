@@ -5,6 +5,9 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/tanishqtrivedi27/ecom/service/cart"
+	"github.com/tanishqtrivedi27/ecom/service/order"
+	"github.com/tanishqtrivedi27/ecom/service/product"
 	"github.com/tanishqtrivedi27/ecom/service/user"
 )
 
@@ -21,15 +24,23 @@ func (s *APIServer) Run() error {
 	router := http.NewServeMux()
 
 	v1 := http.NewServeMux()
-	v1.Handle("/api/v1", http.StripPrefix("/api/v1", router))
+	v1.Handle("/api/v1/", http.StripPrefix("/api/v1", router))
 
 	userStore := user.NewStore(s.db)
 	userHandler := user.NewHandler(userStore)
 	userHandler.RegisterRoutes(router)
 
+	productStore := product.NewStore(s.db)
+	productHandler := product.NewHandler(productStore)
+	productHandler.RegisterRoutes(router)
+
+	orderStore := order.NewStore(s.db)
+	cartHandler := cart.NewHandler(orderStore, productStore, userStore)
+	cartHandler.RegisterRoutes(router)
+
 	server := http.Server{
 		Addr:    s.addr,
-		Handler: router,
+		Handler: v1,
 	}
 
 	log.Printf("Server started at %s", s.addr)
