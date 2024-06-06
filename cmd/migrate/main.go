@@ -1,54 +1,80 @@
 package main
 
 import (
+	"bufio"
+	"database/sql"
+	"fmt"
 	"log"
 	"os"
-
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
-
-	"github.com/tanishqtrivedi27/ecom/config"
-	"github.com/tanishqtrivedi27/ecom/db"
+	"path/filepath"
 
 	_ "github.com/lib/pq"
 )
 
 func main() {
-	dbconfig := db.PostgresConfig{
-		User:     config.Envs.DBUser,
-		Password: config.Envs.DBPasword,
-		DBName:   config.Envs.DBName,
-	}
-
-	db, err := db.NewPostgreSQLStorage(dbconfig)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	driver, err := postgres.WithInstance(db, &postgres.Config{})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	m, err := migrate.NewWithDatabaseInstance(
-		"file://cmd/migrate/migrations/",
-		"postgres",
-		driver,
+	// PostgreSQL connection parameters
+	const (
+		host     = "localhost" // or the Docker container IP
+		port     = 5432        // or the port your Docker container is exposed on
+		user     = "postgres"
+		password = "postgres"
+		dbname   = "ecom"
 	)
+
+	// Connection string
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+
+	// Connect to PostgreSQL database
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	// Ensure connection is valid
+	err = db.Ping()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	cmd := os.Args[len(os.Args) - 1]
-	if cmd == "up" {
-		if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-			log.Fatal(err)
+	fmt.Println("Successfully connected to the database!")
+
+
+	folderPath := "cmd/migrate/migrations"
+	err = filepath.Walk(folderPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
 		}
-	} else if cmd == "down" {
-		if err := m.Down(); err != nil && err != migrate.ErrNoChange {
-			log.Fatal(err)
+		if !info.IsDir() {
+			file, err := os.Open(path)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer file.Close()
+
+			var queries string
+			scanner := bufio.NewScanner(file)
+			for scanner.Scan() {
+				queries += scanner.Text() + "\n"
+			}
+
+			if err := scanner.Err(); err != nil {
+				log.Fatal(err)
+			}
+
+			_, err = db.Exec(queries)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
+		return nil
+	})
+
+	// Handle errors, if any
+	if err != nil {
+		fmt.Println("Error:", err)
 	}
 
+	fmt.Println("Successfully executed query!")
 }

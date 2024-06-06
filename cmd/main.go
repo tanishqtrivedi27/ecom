@@ -19,6 +19,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close()
 
 	server := api.NewAPIServer("localhost:8080", db)
 	if err := server.Run(); err != nil {

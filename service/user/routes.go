@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/tanishqtrivedi27/ecom/config"
 	"github.com/tanishqtrivedi27/ecom/service/auth"
 	"github.com/tanishqtrivedi27/ecom/types"
 	"github.com/tanishqtrivedi27/ecom/utils"
@@ -24,13 +25,9 @@ func (h *Handler) RegisterRoutes(router *http.ServeMux) {
 }
 
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
-	
-}
-
-func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 	//get JSON payload
-	var payload types.RegisterUserPayLoad
-	if err := utils.ParseJSON(r, payload); err != nil {
+	var payload types.LoginUserPayLoad
+	if err := utils.ParseJSON(r, &payload); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
@@ -40,7 +37,42 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 		errors := err.(validator.ValidationErrors)
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid payload %v", errors))
 		return
+	}
 
+	//check if the user already exits
+	u, err := h.store.GetUserByEmail(payload.Email)
+	if err == nil {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("not found, invalid email or password"))
+		return
+	}
+
+	if !auth.ComparePasswords(u.Password, []byte(payload.Password)) {
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("not found, invalid email or password"))
+		return
+	}
+	secret := []byte(config.Envs.JWTSecret)
+	token, err := auth.CreateJWT(secret, u.Id)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, map[string]string{"token": token})
+}
+
+func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
+	//get JSON payload
+	var payload types.RegisterUserPayLoad
+	if err := utils.ParseJSON(r, &payload); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	//validate the payload
+	if err := utils.Validate.Struct(payload); err != nil {
+		errors := err.(validator.ValidationErrors)
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid payload %v", errors))
+		return
 	}
 
 	//check if the user already exits
