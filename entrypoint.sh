@@ -1,9 +1,7 @@
 #!/bin/sh
 
-# Run migrations
-echo "Running migrations..."
+echo "Running database migrations..."
 /app/db
 
-# Run the main application
-echo "Starting application..."
+echo "Starting the application..."
 /app/ecom
