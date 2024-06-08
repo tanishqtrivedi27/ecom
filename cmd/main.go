@@ -10,9 +10,11 @@ import (
 
 func main() {
 	dbconfig := db.PostgresConfig{
+		Host:     config.Envs.PublicHost,
 		User:     config.Envs.DBUser,
 		Password: config.Envs.DBPasword,
 		DBName:   config.Envs.DBName,
+		Port:     5432,
 	}
 
 	db, err := db.NewPostgreSQLStorage(dbconfig)
@@ -21,7 +23,7 @@ func main() {
 	}
 	defer db.Close()
 
-	server := api.NewAPIServer("localhost:8080", db)
+	server := api.NewAPIServer(":8080", db)
 	if err := server.Run(); err != nil {
 		log.Fatal(err)
 	}

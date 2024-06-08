@@ -9,3 +9,4 @@ migrate:
 
 run: migrate build
 	@./bin/ecom
+

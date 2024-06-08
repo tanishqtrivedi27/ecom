@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/tanishqtrivedi27/ecom/logger"
 	"github.com/tanishqtrivedi27/ecom/service/cart"
 	"github.com/tanishqtrivedi27/ecom/service/order"
 	"github.com/tanishqtrivedi27/ecom/service/product"
@@ -40,7 +41,7 @@ func (s *APIServer) Run() error {
 
 	server := http.Server{
 		Addr:    s.addr,
-		Handler: v1,
+		Handler: logger.RequestLoggingMiddleWare(v1),
 	}
 
 	log.Printf("Server started at %s", s.addr)
