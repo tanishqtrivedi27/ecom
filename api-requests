@@ -1,0 +1,23 @@
+POST /api/v1/cart/checkout
+{
+    "items": [
+        {
+            "productID": 1,
+            "Quantity": 23
+        }
+    ]
+}
+
+POST /api/v1/register
+{
+    "firstName": "tanishq",
+    "lastName": "33",
+    "email": "34r@bmao.com",
+    "password": "44444"
+}
+
+POST /api/v1/login
+{
+    "email": "34r@bmao.com",
+    "password": "44444"
+}
