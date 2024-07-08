@@ -1,7 +1,7 @@
 services:
-  postgres-0:
+  postgres:
     image: postgres
-    container_name: postgres-0
+    container_name: postgres-ecom
     environment:
       POSTGRES_PASSWORD: postgres
     ports:
@@ -13,15 +13,16 @@ services:
       retries: 3
       start_period: 10s
     volumes:
-      - 55d96253b3f2ce0a9503cf20aee317287f2a15046d0ab1a069d7c20f897f8f37:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
-  ecom:
+  backend:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: ecom
+    container_name: backend-ecom
     environment:
-      DB_HOST: postgres-0
+      DB_HOST: postgres
       DB_USER: postgres
       DB_PASSWORD: postgres
       DB_NAME: ecom
@@ -30,9 +31,9 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      postgres-0:
+      postgres:
         condition: service_healthy
 
 
 volumes:
-  55d96253b3f2ce0a9503cf20aee317287f2a15046d0ab1a069d7c20f897f8f37:
+  postgres-data:
