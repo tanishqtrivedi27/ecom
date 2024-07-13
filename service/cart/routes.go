@@ -11,17 +11,17 @@ import (
 )
 
 type Handler struct {
-	store        types.OrderStore
+	orderStore   types.OrderStore
 	productStore types.ProductStore
 	userStore    types.UserStore
 }
 
-func NewHandler(store types.OrderStore, productStore types.ProductStore, userStore types.UserStore) *Handler {
-	return &Handler{store: store, productStore: productStore, userStore: userStore}
+func NewHandler(orderStore types.OrderStore, productStore types.ProductStore, userStore types.UserStore) *Handler {
+	return &Handler{orderStore: orderStore, productStore: productStore, userStore: userStore}
 }
 
 func (h *Handler) RegisterRoutes(router *http.ServeMux) {
-	router.HandleFunc("POST /cart/checkout", auth.WithJWTAuth(http.HandlerFunc(h.handleCheckout), h.userStore))
+	router.HandleFunc("POST /cart/checkout", auth.JWTAuthMiddleware(http.HandlerFunc(h.handleCheckout)))
 }
 
 func (h *Handler) handleCheckout(w http.ResponseWriter, r *http.Request) {

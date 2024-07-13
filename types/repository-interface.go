@@ -17,4 +17,7 @@ type ProductStore interface {
 type OrderStore interface {
 	CreateOrder(Order) (int, error)
 	CreateOrderItem(OrderItem) error
+	GetOrders(int) ([]*Order, error)
+	GetOrderStatus(int, int) (string, error)
+	CancelOrder(int, int) error
 }

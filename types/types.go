@@ -1,7 +1,5 @@
 package types
 
-import "time"
-
 type RegisterUserPayLoad struct {
 	FirstName string `json:"firstName" validate:"required"`
 	LastName  string `json:"lastName" validate:"required"`
@@ -17,15 +15,6 @@ type LoginUserPayLoad struct {
 type CartCheckoutItem struct {
 	ProductID int `json:"productID"`
 	Quantity  int `json:"quantity"`
-}
-
-type OrderItem struct {
-	ID        int       `json:"id"`
-	OrderID   int       `json:"orderID"`
-	ProductID int       `json:"productID"`
-	Quantity  int       `json:"quantity"`
-	Price     float64   `json:"price"`
-	CreatedAt time.Time `json:"createdAt"`
 }
 
 type CartCheckoutPayload struct {

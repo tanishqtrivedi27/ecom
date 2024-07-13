@@ -22,6 +22,10 @@ func NewHandler(store types.UserStore) *Handler {
 func (h *Handler) RegisterRoutes(router *http.ServeMux) {
 	router.HandleFunc("POST /login", h.handleLogin)
 	router.HandleFunc("POST /register", h.handleRegister)
+	
+	router.HandleFunc("GET /addresses", auth.JWTAuthMiddleware(http.HandlerFunc(h.handleGetAddresses)))
+	router.HandleFunc("POST /addresses", auth.JWTAuthMiddleware(http.HandlerFunc(h.handleCreateAddress)))
+	router.HandleFunc("PUT /addresses/{id}", auth.JWTAuthMiddleware(http.HandlerFunc(h.handleUpdateAddress)))
 }
 
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -50,6 +54,7 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("not found, invalid password"))
 		return
 	}
+	
 	secret := []byte(config.Envs.JWTSecret)
 	token, err := auth.CreateJWT(secret, u.Id)
 	if err != nil {
@@ -102,4 +107,13 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.WriteJSON(w, http.StatusCreated, nil)
+}
+
+func (h *Handler) handleGetAddresses(w http.ResponseWriter, r *http.Request) {
+}
+
+func (h *Handler) handleCreateAddress(w http.ResponseWriter, r *http.Request) {
+}
+
+func (h *Handler) handleUpdateAddress(w http.ResponseWriter, r *http.Request) {
 }
