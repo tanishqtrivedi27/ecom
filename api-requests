@@ -15,6 +15,7 @@
                 "productID": 1,
                 "Quantity": 2
             }
-        ]
+        ],
+        "billingAddressId": 1
     }
 }

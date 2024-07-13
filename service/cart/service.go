@@ -20,7 +20,7 @@ func getCartItemIds(items []types.CartCheckoutItem) ([]int, error) {
 	return productIds, nil
 }
 
-func (h *Handler) createOrder(ps []types.Product, items []types.CartCheckoutItem, userId int) (int, float64, error) {
+func (h *Handler) createOrder(ps []types.Product, items []types.CartCheckoutItem, userId, billingAddressId int) (int, float64, error) {
 	productMap := make(map[int]types.Product)
 	for _, product := range ps {
 		productMap[product.ID] = product
@@ -43,10 +43,10 @@ func (h *Handler) createOrder(ps []types.Product, items []types.CartCheckoutItem
 
 	//create records in order, order_items table
 	orderID, err := h.orderStore.CreateOrder(types.Order{
-		UserID:  userId,
-		Total:   totalPrice,
-		Status:  "pending",
-		Address: "some random address", // update, fetch from user table
+		UserID:           userId,
+		BillingAddressID: billingAddressId,
+		Total:            totalPrice,
+		Status:           "pending",
 	})
 	if err != nil {
 		return 0, 0, err

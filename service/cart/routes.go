@@ -46,13 +46,15 @@ func (h *Handler) handleCheckout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// ? check if valid address id use userStore
+
 	ps, err := h.productStore.GetProductByIDs(productIds)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	orderID, totalPrice, err := h.createOrder(ps, cart.Items, userId)
+	orderID, totalPrice, err := h.createOrder(ps, cart.Items, userId, cart.BillingAddressID)
 	if err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return

@@ -46,7 +46,7 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 	//check if the user already exits
 	u, err := h.store.GetUserByEmail(payload.Email)
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("not found, invalid email"))
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("not found, invalid email %v", err))
 		return
 	}
 

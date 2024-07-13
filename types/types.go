@@ -18,7 +18,8 @@ type CartCheckoutItem struct {
 }
 
 type CartCheckoutPayload struct {
-	Items []CartCheckoutItem `json:"items" validate:"required"`
+	Items            []CartCheckoutItem `json:"items" validate:"required"`
+	BillingAddressID int                `json:"billingAddressId" validate:"required"`
 }
 
 type CreateProductPayload struct {

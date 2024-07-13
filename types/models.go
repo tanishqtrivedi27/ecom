@@ -9,6 +9,16 @@ type User struct {
 	Email     string    `json:"email"`
 	Password  string    `json:"password"`
 	CreatedAt time.Time `json:"createdAt"`
+	LastLogin time.Time `json:"lastLogin"`
+}
+
+type Address struct {
+	Id      int    `json:"id"`
+	UserID  int    `json:"userID"`
+	Line1   string `json:"line1"`
+	Line2   string `json:"line2"`
+	City    string `json:"city"`
+	Country string `json:"country"`
 }
 
 type Product struct {
@@ -22,12 +32,12 @@ type Product struct {
 }
 
 type Order struct {
-	ID        int       `json:"id"`
-	UserID    int       `json:"userID"`
-	Total     float64   `json:"total"`
-	Status    string    `json:"status"`
-	Address   string    `json:"address"`
-	CreatedAt time.Time `json:"createdAt"`
+	ID               int       `json:"id"`
+	UserID           int       `json:"userID"`
+	BillingAddressID int       `json:"billingAddressId"`
+	Total            float64   `json:"total"`
+	Status           string    `json:"status"`
+	CreatedAt        time.Time `json:"createdAt"`
 }
 
 type OrderItem struct {

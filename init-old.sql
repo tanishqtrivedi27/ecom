@@ -9,18 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
   lastName VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
-  createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  lastLogin TIMESTAMP DEFAULT NULL
-);
-
-CREATE TABLE IF NOT EXISTS addresses (
-  id SERIAL PRIMARY KEY,
-  userId INT NOT NULL,
-  line1 VARCHAR(255),
-  line2 VARCHAR(255),
-  city VARCHAR(255),
-  country VARCHAR(255),
-  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+  createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS products (
@@ -36,12 +25,11 @@ CREATE TABLE IF NOT EXISTS products (
 CREATE TABLE IF NOT EXISTS orders (
   id SERIAL PRIMARY KEY,
   userId INT NOT NULL,
-  billingAddressId INT NOT NULL,
   total DECIMAL(10, 2) NOT NULL,
   status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'cancelled')),
+  address TEXT NOT NULL,
   createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (billingAddressId) REFERENCES addresses(id) ON DELETE CASCADE
+  FOREIGN KEY (userId) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS order_items (
@@ -49,10 +37,11 @@ CREATE TABLE IF NOT EXISTS order_items (
   orderId INT NOT NULL,
   productId INT NOT NULL,
   quantity INT NOT NULL,
-  price DECIMAL(10, 2) NOT NULL,
-  FOREIGN KEY (orderId) REFERENCES orders(id) ON DELETE CASCADE,
-  FOREIGN KEY (productId) REFERENCES products(id) ON DELETE CASCADE
+  price NUMERIC(10, 2) NOT NULL,
+  FOREIGN KEY (orderId) REFERENCES orders(id),
+  FOREIGN KEY (productId) REFERENCES products(id)
 );
+
 
 INSERT INTO products (name, description, image, price, quantity)
 VALUES

@@ -17,7 +17,7 @@ func NewStore(db *sql.DB) *Store {
 func (s *Store) CreateOrder(order types.Order) (int, error) {
 	var lastInsertId int
 
-	err := s.db.QueryRow("INSERT INTO orders (userId, total, status, address) VALUES ($1, $2, $3, $4) RETURNING id", order.UserID, order.Total, order.Status, order.Address).Scan(&lastInsertId)
+	err := s.db.QueryRow("INSERT INTO orders (userId, billingAddressId, total, status) VALUES ($1, $2, $3, $4) RETURNING id", order.UserID, order.BillingAddressID, order.Total, order.Status).Scan(&lastInsertId)
 	if err != nil {
 		return 0, err
 	}
@@ -74,9 +74,9 @@ func scanRowsIntoOrder(rows *sql.Rows) (*types.Order, error) {
 	err := rows.Scan(
 		&order.ID,
 		&order.UserID,
+		&order.BillingAddressID,
 		&order.Total,
 		&order.Status,
-		&order.Address,
 		&order.CreatedAt,
 	)
 	if err != nil {

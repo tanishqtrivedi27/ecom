@@ -5,7 +5,7 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o ecom ./cmd/main.go
 
-FROM alpine as release-stage
+FROM alpine AS release-stage
 WORKDIR /app
 COPY --from=build-stage /app/ecom /app/ecom
 EXPOSE 8080
