@@ -2,6 +2,7 @@ package cart
 
 import (
 	"fmt"
+	"sync/atomic"
 
 	"github.com/tanishqtrivedi27/ecom/types"
 )
@@ -20,8 +21,8 @@ func getCartItemIds(items []types.CartCheckoutItem) ([]int, error) {
 	return productIds, nil
 }
 
-func (h *Handler) createOrder(ps []types.Product, items []types.CartCheckoutItem, userId, billingAddressId int) (int, float64, error) {
-	productMap := make(map[int]types.Product)
+func (h *Handler) createOrder(ps []*types.Product, items []types.CartCheckoutItem, userId, billingAddressId int) (int, float64, error) {
+	productMap := make(map[int]*types.Product)
 	for _, product := range ps {
 		productMap[product.ID] = product
 	}
@@ -37,8 +38,8 @@ func (h *Handler) createOrder(ps []types.Product, items []types.CartCheckoutItem
 	// update quantity in products table
 	for _, item := range items {
 		product := productMap[item.ProductID]
-		product.Quantity -= item.Quantity
-		h.productStore.UpdateProduct(product)
+		atomic.AddInt32(&product.Quantity, -int32(item.Quantity))
+		h.productStore.UpdateProduct(*product)
 	}
 
 	//create records in order, order_items table
@@ -48,6 +49,7 @@ func (h *Handler) createOrder(ps []types.Product, items []types.CartCheckoutItem
 		Total:            totalPrice,
 		Status:           "pending",
 	})
+	
 	if err != nil {
 		return 0, 0, err
 	}
@@ -64,7 +66,7 @@ func (h *Handler) createOrder(ps []types.Product, items []types.CartCheckoutItem
 	return orderID, totalPrice, nil
 }
 
-func checkIfInStock(cartItems []types.CartCheckoutItem, products map[int]types.Product) error {
+func checkIfInStock(cartItems []types.CartCheckoutItem, products map[int]*types.Product) error {
 	if len(cartItems) == 0 {
 		return fmt.Errorf("cart is empty")
 	}
@@ -72,18 +74,18 @@ func checkIfInStock(cartItems []types.CartCheckoutItem, products map[int]types.P
 	for _, item := range cartItems {
 		product, ok := products[item.ProductID]
 		if !ok {
-			return fmt.Errorf("product %d is not available in the store, please refresh your cart", item.ProductID)
+			return fmt.Errorf("product %v is not available in the store, please refresh your cart", item.ProductID)
 		}
 
-		if product.Quantity < item.Quantity {
-			return fmt.Errorf("product %s is not available in the quantity requested", product.Name)
+		if atomic.LoadInt32(&product.Quantity) < int32(item.Quantity) {
+			return fmt.Errorf("product %v is not available in the quantity requested", product.Name)
 		}
 	}
 
 	return nil
 }
 
-func calculateTotalPrice(cartItems []types.CartCheckoutItem, products map[int]types.Product) float64 {
+func calculateTotalPrice(cartItems []types.CartCheckoutItem, products map[int]*types.Product) float64 {
 	var total float64
 
 	for _, item := range cartItems {

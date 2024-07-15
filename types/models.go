@@ -1,6 +1,8 @@
 package types
 
-import "time"
+import (
+	"time"
+)
 
 type User struct {
 	Id        int       `json:"id"`
@@ -27,7 +29,7 @@ type Product struct {
 	Description string    `json:"description"`
 	Image       string    `json:"image"`
 	Price       float64   `json:"price"`
-	Quantity    int       `json:"quantity"`
+	Quantity    int32     `json:"quantity"`
 	CreatedAt   time.Time `json:"createdAt"`
 }
 

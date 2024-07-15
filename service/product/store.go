@@ -34,7 +34,7 @@ func (s *Store) GetProductByID(productID int) (*types.Product, error) {
 	return p, nil
 }
 
-func (s *Store) GetProductByIDs(productIDs []int) ([]types.Product, error) {
+func (s *Store) GetProductByIDs(productIDs []int) ([]*types.Product, error) {
 	placeholders := make([]string, len(productIDs))
     for i := range placeholders {
         placeholders[i] = fmt.Sprintf("$%d", i+1)
@@ -56,18 +56,17 @@ func (s *Store) GetProductByIDs(productIDs []int) ([]types.Product, error) {
 	}
 	defer rows.Close()
 
-	products := []types.Product{}
+	products := []*types.Product{}
 	for rows.Next() {
 		p, err := scanRowsIntoProduct(rows)
 		if err != nil {
 			return nil, err
 		}
 
-		products = append(products, *p)
+		products = append(products, p)
 	}
 
 	return products, nil
-
 }
 
 func (s *Store) GetProducts() ([]*types.Product, error) {
