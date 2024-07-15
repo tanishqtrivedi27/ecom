@@ -31,5 +31,4 @@ func NewPostgreSQLStorage(cfg PostgresConfig) (*sql.DB, error) {
 	}
 
 	return db, nil
-
 }

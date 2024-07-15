@@ -29,3 +29,10 @@ type CreateProductPayload struct {
 	Price       float64 `json:"price" validate:"required"`
 	Quantity    int     `json:"quantity" validate:"required"`
 }
+
+type CreateAddressPayload struct {
+	Line1   string `json:"line1" validate:"required"`
+	Line2   string `json:"line2"`
+	City    string `json:"city" validate:"required"`
+	Country string `json:"country" validate:"required"`
+}

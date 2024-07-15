@@ -1,15 +1,19 @@
 package types
 
 type UserStore interface {
-	GetUserByEmail(email string) (*User, error)
-	GetUserById(Id int) (*User, error)
+	GetUserByEmail(string) (*User, error)
+	GetUserById(int) (*User, error)
 	CreateUser(User) error
+	UpdateLastLogin(int) error
+	GetAddresses(int) ([]*Address, error)
+	CreateAddress(Address) error
+	CheckIfValidAddress(int, int) (bool, error)
 }
 
 type ProductStore interface {
 	GetProducts() ([]*Product, error)
-	GetProductByID(productID int) (*Product, error)
-	GetProductByIDs(productIDs []int) ([]Product, error)
+	GetProductByID(int) (*Product, error)
+	GetProductByIDs([]int) ([]Product, error)
 	CreateProduct(CreateProductPayload) error
 	UpdateProduct(Product) error
 }

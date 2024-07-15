@@ -22,10 +22,10 @@ func NewHandler(store types.UserStore) *Handler {
 func (h *Handler) RegisterRoutes(router *http.ServeMux) {
 	router.HandleFunc("POST /login", h.handleLogin)
 	router.HandleFunc("POST /register", h.handleRegister)
-	
+
 	router.HandleFunc("GET /addresses", auth.JWTAuthMiddleware(http.HandlerFunc(h.handleGetAddresses)))
 	router.HandleFunc("POST /addresses", auth.JWTAuthMiddleware(http.HandlerFunc(h.handleCreateAddress)))
-	router.HandleFunc("PUT /addresses/{id}", auth.JWTAuthMiddleware(http.HandlerFunc(h.handleUpdateAddress)))
+	// router.HandleFunc("PUT /addresses/{id}", auth.JWTAuthMiddleware(http.HandlerFunc(h.handleUpdateAddress)))
 }
 
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -54,7 +54,13 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("not found, invalid password"))
 		return
 	}
-	
+
+	err = h.store.UpdateLastLogin(u.Id)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
 	secret := []byte(config.Envs.JWTSecret)
 	token, err := auth.CreateJWT(secret, u.Id)
 	if err != nil {
@@ -96,9 +102,9 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 
 	err = h.store.CreateUser(types.User{
 		FirstName: payload.FirstName,
-		LastName: payload.LastName,
-		Email: payload.Email,
-		Password: hashedPassword,
+		LastName:  payload.LastName,
+		Email:     payload.Email,
+		Password:  hashedPassword,
 	})
 
 	if err != nil {
@@ -110,10 +116,49 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleGetAddresses(w http.ResponseWriter, r *http.Request) {
+	userId := auth.GetUserFromContext(r.Context())
+
+	addresses, err := h.store.GetAddresses(userId)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, addresses)
+
 }
 
 func (h *Handler) handleCreateAddress(w http.ResponseWriter, r *http.Request) {
+	userId := auth.GetUserFromContext(r.Context())
+
+	var payload types.CreateAddressPayload
+	if err := utils.ParseJSON(r, &payload); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	if err := utils.Validate.Struct(payload); err != nil {
+		errors := err.(validator.ValidationErrors)
+		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid payload %v", errors))
+		return
+	}
+
+	err := h.store.CreateAddress(types.Address{
+		UserID:  userId,
+		Line1:   payload.Line1,
+		Line2:   payload.Line2,
+		City:    payload.City,
+		Country: payload.Country,
+	})
+
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusCreated, nil)
 }
 
-func (h *Handler) handleUpdateAddress(w http.ResponseWriter, r *http.Request) {
-}
+// func (h *Handler) handleUpdateAddress(w http.ResponseWriter, r *http.Request) {
+// }

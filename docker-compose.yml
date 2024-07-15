@@ -21,13 +21,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: backend-ecom
-    environment:
-      DB_HOST: postgres
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      DB_NAME: ecom
-      JWT_SECRET: getng850egvmn50gvthgwujdvt
-      JWT_EXPIRATION: 100000
+    env_file: ".env"
     ports:
       - "8080:8080"
     depends_on:

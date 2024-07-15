@@ -35,6 +35,7 @@ func (s *Store) GetOrders(userId int) ([]*types.Order, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	orders := make([]*types.Order, 0)
 	for rows.Next() {
