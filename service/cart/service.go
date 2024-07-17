@@ -1,6 +1,7 @@
 package cart
 
 import (
+	"database/sql"
 	"fmt"
 	"sync/atomic"
 
@@ -21,7 +22,7 @@ func getCartItemIds(items []types.CartCheckoutItem) ([]int, error) {
 	return productIds, nil
 }
 
-func (h *Handler) createOrder(ps []*types.Product, items []types.CartCheckoutItem, userId, billingAddressId int) (int, float64, error) {
+func (h *Handler) createOrder(ps []*types.Product, items []types.CartCheckoutItem, userId, billingAddressId int, tx *sql.Tx) (int, float64, error) {
 	productMap := make(map[int]*types.Product)
 	for _, product := range ps {
 		productMap[product.ID] = product
@@ -39,8 +40,12 @@ func (h *Handler) createOrder(ps []*types.Product, items []types.CartCheckoutIte
 	for _, item := range items {
 		product := productMap[item.ProductID]
 		atomic.AddInt32(&product.Quantity, -int32(item.Quantity))
-		h.productStore.UpdateProduct(*product)
+		h.productStore.UpdateProductTx(tx, product)
 	}
+
+	if err := tx.Commit(); err != nil {
+        return 0, 0, err
+    }
 
 	//create records in order, order_items table
 	orderID, err := h.orderStore.CreateOrder(types.Order{
@@ -49,7 +54,7 @@ func (h *Handler) createOrder(ps []*types.Product, items []types.CartCheckoutIte
 		Total:            totalPrice,
 		Status:           "pending",
 	})
-	
+
 	if err != nil {
 		return 0, 0, err
 	}

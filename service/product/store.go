@@ -16,59 +16,6 @@ func NewStore(db *sql.DB) *Store {
 	return &Store{db: db}
 }
 
-func (s *Store) GetProductByID(productID int) (*types.Product, error) {
-	rows, err := s.db.Query("SELECT * FROM products WHERE id = $1", productID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	p := new(types.Product)
-	for rows.Next() {
-		p, err = scanRowsIntoProduct(rows)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return p, nil
-}
-
-func (s *Store) GetProductByIDs(productIDs []int) ([]*types.Product, error) {
-	placeholders := make([]string, len(productIDs))
-    for i := range placeholders {
-        placeholders[i] = fmt.Sprintf("$%d", i+1)
-    }
-
-    placeholderStr := strings.Join(placeholders, ", ")
-
-    query := fmt.Sprintf("SELECT * FROM products WHERE id IN (%s)", placeholderStr)
-
-	// Convert productIDs to []interface{}
-	args := make([]interface{}, len(productIDs))
-	for i, v := range productIDs {
-		args[i] = v
-	}
-
-	rows, err := s.db.Query(query, args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	products := []*types.Product{}
-	for rows.Next() {
-		p, err := scanRowsIntoProduct(rows)
-		if err != nil {
-			return nil, err
-		}
-
-		products = append(products, p)
-	}
-
-	return products, nil
-}
-
 func (s *Store) GetProducts() ([]*types.Product, error) {
 	rows, err := s.db.Query("SELECT * FROM products")
 	if err != nil {
@@ -89,6 +36,24 @@ func (s *Store) GetProducts() ([]*types.Product, error) {
 	return products, nil
 }
 
+func (s *Store) GetProductByID(productID int) (*types.Product, error) {
+	rows, err := s.db.Query("SELECT * FROM products WHERE id = $1", productID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	p := new(types.Product)
+	for rows.Next() {
+		p, err = scanRowsIntoProduct(rows)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return p, nil
+}
+
 func (s *Store) CreateProduct(product types.CreateProductPayload) error {
 	_, err := s.db.Exec("INSERT INTO products (name, price, image, description, quantity) VALUES ($1, $2, $3, $4, $5)", product.Name, product.Price, product.Image, product.Description, product.Quantity)
 	if err != nil {
@@ -98,8 +63,47 @@ func (s *Store) CreateProduct(product types.CreateProductPayload) error {
 	return nil
 }
 
-func (s *Store) UpdateProduct(product types.Product) error {
-	_, err := s.db.Exec("UPDATE products SET name = $1, price = $2, image = $3, description = $4, quantity = $5 WHERE id = $6", product.Name, product.Price, product.Image, product.Description, product.Quantity, product.ID)
+func (s *Store) BeginTx() (*sql.Tx, error) {
+	return s.db.Begin()
+}
+
+func (s *Store) GetProductByIDsTx(tx *sql.Tx, productIDs []int) ([]*types.Product, error) {
+	placeholders := make([]string, len(productIDs))
+	for i := range placeholders {
+		placeholders[i] = fmt.Sprintf("$%d", i+1)
+	}
+
+	placeholderStr := strings.Join(placeholders, ", ")
+
+	query := fmt.Sprintf("SELECT * FROM products WHERE id IN (%s) FOR UPDATE", placeholderStr)
+
+	// Convert productIDs to []interface{}
+	args := make([]interface{}, len(productIDs))
+	for i, v := range productIDs {
+		args[i] = v
+	}
+
+	rows, err := tx.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	products := []*types.Product{}
+	for rows.Next() {
+		p, err := scanRowsIntoProduct(rows)
+		if err != nil {
+			return nil, err
+		}
+
+		products = append(products, p)
+	}
+
+	return products, nil
+}
+
+func (s *Store) UpdateProductTx(tx *sql.Tx, product *types.Product) error {
+	_, err := tx.Exec("UPDATE products SET name = $1, price = $2, image = $3, description = $4, quantity = $5 WHERE id = $6", product.Name, product.Price, product.Image, product.Description, product.Quantity, product.ID)
 	if err != nil {
 		return err
 	}

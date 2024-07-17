@@ -1,4 +1,6 @@
 bin
+concurrent-req.sh
+api-requests.json
 
 # Binaries for programs and plugins
 *.exe

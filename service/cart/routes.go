@@ -39,13 +39,6 @@ func (h *Handler) handleCheckout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//get products
-	productIds, err := getCartItemIds(cart.Items)
-	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, err)
-		return
-	}
-
 	exists, err := h.userStore.CheckIfValidAddress(userId, cart.BillingAddressID)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
@@ -57,13 +50,26 @@ func (h *Handler) handleCheckout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	products, err := h.productStore.GetProductByIDs(productIds)
+	productIds, err := getCartItemIds(cart.Items)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	tx, err := h.productStore.BeginTx()
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, err)
+		return
+	}
+	defer tx.Rollback()
+
+	products, err := h.productStore.GetProductByIDsTx(tx, productIds)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	orderID, totalPrice, err := h.createOrder(products, cart.Items, userId, cart.BillingAddressID)
+	orderID, totalPrice, err := h.createOrder(products, cart.Items, userId, cart.BillingAddressID, tx)
 	if err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return

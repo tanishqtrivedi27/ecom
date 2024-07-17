@@ -1,5 +1,7 @@
 package types
 
+import "database/sql"
+
 type UserStore interface {
 	GetUserByEmail(string) (*User, error)
 	GetUserById(int) (*User, error)
@@ -13,9 +15,11 @@ type UserStore interface {
 type ProductStore interface {
 	GetProducts() ([]*Product, error)
 	GetProductByID(int) (*Product, error)
-	GetProductByIDs([]int) ([]*Product, error)
 	CreateProduct(CreateProductPayload) error
-	UpdateProduct(Product) error
+	
+	BeginTx() (*sql.Tx, error)
+	GetProductByIDsTx(*sql.Tx, []int) ([]*Product, error)
+	UpdateProductTx(*sql.Tx, *Product) error
 }
 
 type OrderStore interface {
