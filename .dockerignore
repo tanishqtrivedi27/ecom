@@ -24,4 +24,4 @@
 LICENSE
 README.md
 concurrent-req.sh
-api-requests.json
+api-requests.http

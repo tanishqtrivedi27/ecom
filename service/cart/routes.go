@@ -75,8 +75,12 @@ func (h *Handler) handleCheckout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, map[string]interface{}{
+	err = utils.WriteJSON(w, http.StatusOK, map[string]interface{}{
 		"total_price": totalPrice,
 		"order_id":    orderID,
 	})
+
+	if err != nil {
+		return
+	}
 }

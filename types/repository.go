@@ -16,7 +16,6 @@ type ProductStore interface {
 	GetProducts() ([]*Product, error)
 	GetProductByID(int) (*Product, error)
 	CreateProduct(CreateProductPayload) error
-	
 	BeginTx() (*sql.Tx, error)
 	GetProductByIDsTx(*sql.Tx, []int) ([]*Product, error)
 	UpdateProductTx(*sql.Tx, *Product) error

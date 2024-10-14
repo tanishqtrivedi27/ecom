@@ -11,12 +11,12 @@ import (
 )
 
 type Handler struct {
-	orderstore types.OrderStore
+	orderStore types.OrderStore
 	userStore  types.UserStore
 }
 
-func NewHandler(orderstore types.OrderStore, userStore types.UserStore) *Handler {
-	return &Handler{orderstore: orderstore, userStore: userStore}
+func NewHandler(orderStore types.OrderStore, userStore types.UserStore) *Handler {
+	return &Handler{orderStore: orderStore, userStore: userStore}
 }
 
 func (h *Handler) RegisterRoutes(router *http.ServeMux) {
@@ -27,7 +27,7 @@ func (h *Handler) RegisterRoutes(router *http.ServeMux) {
 func (h *Handler) getOrders(w http.ResponseWriter, r *http.Request) {
 	userId := auth.GetUserFromContext(r.Context())
 
-	orders, err := h.orderstore.GetOrders(userId)
+	orders, err := h.orderStore.GetOrders(userId)
 
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
@@ -35,14 +35,13 @@ func (h *Handler) getOrders(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.WriteJSON(w, http.StatusOK, orders)
-
 }
 
 func (h *Handler) cancelOrder(w http.ResponseWriter, r *http.Request) {
 	userId := auth.GetUserFromContext(r.Context())
 	orderId, _ := strconv.Atoi(r.PathValue("id"))
 
-	orderStatus, err := h.orderstore.GetOrderStatus(userId, orderId)
+	orderStatus, err := h.orderStore.GetOrderStatus(userId, orderId)
 	if err != nil {
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("invalid order id"))
 		return
@@ -53,7 +52,7 @@ func (h *Handler) cancelOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.orderstore.CancelOrder(userId, orderId)
+	err = h.orderStore.CancelOrder(userId, orderId)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
