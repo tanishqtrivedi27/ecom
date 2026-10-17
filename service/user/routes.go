@@ -25,7 +25,6 @@ func (h *Handler) RegisterRoutes(router *http.ServeMux) {
 
 	router.HandleFunc("GET /addresses", auth.JWTAuthMiddleware(http.HandlerFunc(h.handleGetAddresses)))
 	router.HandleFunc("POST /addresses", auth.JWTAuthMiddleware(http.HandlerFunc(h.handleCreateAddress)))
-	// router.HandleFunc("PUT /addresses/{id}", auth.JWTAuthMiddleware(http.HandlerFunc(h.handleUpdateAddress)))
 }
 
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -159,6 +158,3 @@ func (h *Handler) handleCreateAddress(w http.ResponseWriter, r *http.Request) {
 
 	utils.WriteJSON(w, http.StatusCreated, nil)
 }
-
-// func (h *Handler) handleUpdateAddress(w http.ResponseWriter, r *http.Request) {
-// }

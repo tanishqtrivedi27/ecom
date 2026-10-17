@@ -1,0 +1,33 @@
+### Register a new user
+POST http://localhost:8080/api/v1/register
+Content-Type: application/json
+
+{
+  "firstName": "tanishq",
+  "lastName": "trivedi",
+  "email": "tanishq@gmail.com",
+  "password": "12345"
+}
+
+### Login the user
+POST http://localhost:8080/api/v1/login
+Content-Type: application/json
+
+{
+  "email": "tanishq@gmail.com",
+  "password": "12345"
+}
+
+### Checkout cart
+POST http://localhost:8080/api/v1/cart/checkout
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "productID": 1,
+      "Quantity": 2
+    }
+  ],
+  "billingAddressId": 1
+}
