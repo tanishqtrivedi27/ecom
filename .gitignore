@@ -1,6 +1,5 @@
 bin
 concurrent-req.sh
-api-requests.http
 
 # Binaries for programs and plugins
 *.exe

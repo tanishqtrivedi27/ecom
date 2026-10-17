@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"os"
 	"strconv"
 
@@ -19,14 +20,18 @@ type Config struct {
 var Envs = initConfig()
 
 func initConfig() Config {
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+		return Config{}
+	}
 	return Config{
 		PublicHost:             getEnv("DB_HOST", "localhost"),
 		DBUser:                 getEnv("DB_USER", "user"),
 		DBPassword:             getEnv("DB_PASSWORD", "password"),
 		DBName:                 getEnv("DB_NAME", "ecom"),
 		JWTExpirationInSeconds: getEnvAsInt("JWT_EXP", 3600*24*7),
-		JWTSecret:              getEnv("JWT_SECRET", "friursgj509gevmtvt"),
+		JWTSecret:              getEnv("JWT_SECRET", "76534235678976756i765434"),
 	}
 }
 

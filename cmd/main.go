@@ -2,7 +2,7 @@ package main
 
 import (
 	"database/sql"
-	"github.com/tanishqtrivedi27/ecom/api"
+	"github.com/tanishqtrivedi27/ecom/cmd/api"
 	"log"
 
 	"github.com/tanishqtrivedi27/ecom/config"
